@@ -117,4 +117,38 @@ app.post("/api/chat", async (req, res) => {
 
     const { message, memory = "" } = req.body || {};
 
+    if (typeof message !== "string" || !message.trim()) {
+      return res.status(400).json({
+        error: "Escreva uma mensagem para a Lyra."
+      });
+    }
+
+    const input = memory
+      ? `MEMÓRIA DA HISTÓRIA:\n${memory}\n\nMENSAGEM:\n${message}`
+      : message;
+
+    const response = await client.responses.create({
+      model: "gpt-5.6-luna",
+      instructions: LYRA,
+      input
+    });
+
+    return res.json({ reply: response.output_text });
+
+  } catch (error) {
+    console.error("Erro na Lyra:", error);
+
+    return res.status(500).json({
+      error: "A Lyra não conseguiu responder.",
+      details: error.message
+    });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Lyra online na porta ${PORT}`);
+});
+
    
